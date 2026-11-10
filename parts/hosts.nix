@@ -1,6 +1,6 @@
 { config, lib, inputs, ... }:
 let
-  inherit (inputs) nixpkgs home-manager;
+  inherit (inputs) nixpkgs home-manager stylix;
 
   # Colectar todos los módulos dendríticos automáticamente
   nixosModules = builtins.attrValues config.flake.modules.nixos;
@@ -16,6 +16,7 @@ let
     {
       nixpkgs.overlays = [ rustOverlay ];
     }
+    stylix.nixosModules.stylix
     home-manager.nixosModules.home-manager
   ];
 
