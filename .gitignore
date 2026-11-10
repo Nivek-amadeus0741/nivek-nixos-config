@@ -1,0 +1,19 @@
+# Nix outputs
+result
+result-*
+
+# Cargo / Rust build artifacts
+target/
+**/*.rs.bk
+
+# Direnv & Environment
+.direnv/
+.envrc.local
+
+# Editors & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
