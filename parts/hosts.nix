@@ -37,6 +37,7 @@ let
           hostModule
           {
             home-manager = commonHomeManagerSettings // {
+              extraSpecialArgs = { inherit inputs; };
               users.nivek = { ... }: {
                 home.stateVersion = "24.11";
                 home.username = "nivek";

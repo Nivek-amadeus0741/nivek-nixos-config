@@ -104,12 +104,27 @@
         open-floating true
       }
 
+      window-rule {
+        match app-id=r#"^zen"#
+        default-column-width { proportion 0.66667; }
+      }
+
+      window-rule {
+        match app-id=r#"^obsidian$"#
+        default-column-width { proportion 0.5; }
+      }
+
       binds {
         // Lanzadores y Terminales
         Mod+Return { spawn "${pkgs.kitty}/bin/kitty"; }
         Mod+Shift+Return { spawn "${pkgs.wezterm}/bin/wezterm"; }
         Mod+Space { spawn "${pkgs.fuzzel}/bin/fuzzel"; }
         Mod+D { spawn "${pkgs.fuzzel}/bin/fuzzel"; }
+
+        // Aplicaciones Principales
+        Mod+B { spawn "zen"; }
+        Mod+E { spawn "code"; }
+        Mod+O { spawn "obsidian"; }
 
         // Gestión de Ventanas
         Mod+Q { close-window; }
