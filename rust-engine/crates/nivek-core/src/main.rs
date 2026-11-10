@@ -1,4 +1,6 @@
 mod bus;
+mod collectors;
+mod morpher;
 mod server;
 mod state;
 
@@ -37,13 +39,26 @@ async fn main() -> Result<()> {
         socket_path.display()
     );
 
-    let bus = Arc::new(EventBus::new(1024));
+    let bus = Arc::new(EventBus::new(2048));
     let state = Arc::new(DaemonState::new());
 
-    // Publicamos un evento inicial de arranque del sistema
+    // 1. Iniciamos el colector de Wayland IPC (Niri) en segundo plano
+    let niri_bus = Arc::clone(&bus);
+    tokio::spawn(async move {
+        collectors::niri::run_niri_collector(niri_bus).await;
+    });
+
+    // 2. Iniciamos el motor de políticas de Morfismo Contextual
+    let morpher_bus = Arc::clone(&bus);
+    let morpher_rx = bus.subscribe();
+    tokio::spawn(async move {
+        morpher::run_context_morpher(morpher_rx, morpher_bus).await;
+    });
+
+    // Publicamos evento de ciclo de vida
     bus.publish(nivek_wasm_abi::SystemEvent::Custom {
         topic: "system.lifecycle".to_string(),
-        message: "nivek-core daemon inicializado con éxito".to_string(),
+        message: "nivek-core daemon inicializado con colector Niri y Context Morpher".to_string(),
     });
 
     loop {
