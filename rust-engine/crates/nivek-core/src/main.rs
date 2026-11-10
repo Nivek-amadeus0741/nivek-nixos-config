@@ -3,6 +3,7 @@ mod collectors;
 mod morpher;
 mod server;
 mod state;
+mod wasm;
 
 use anyhow::Result;
 use bus::EventBus;
@@ -42,23 +43,37 @@ async fn main() -> Result<()> {
     let bus = Arc::new(EventBus::new(2048));
     let state = Arc::new(DaemonState::new());
 
-    // 1. Iniciamos el colector de Wayland IPC (Niri) en segundo plano
+    // 1. Colector de Wayland IPC (Niri)
     let niri_bus = Arc::clone(&bus);
     tokio::spawn(async move {
         collectors::niri::run_niri_collector(niri_bus).await;
     });
 
-    // 2. Iniciamos el motor de políticas de Morfismo Contextual
+    // 2. Motor de políticas de Morfismo Contextual
     let morpher_bus = Arc::clone(&bus);
     let morpher_rx = bus.subscribe();
     tokio::spawn(async move {
         morpher::run_context_morpher(morpher_rx, morpher_bus).await;
     });
 
+    // 3. Gestor de plugins WebAssembly (WASM Hot-Reload)
+    let config_dir = std::env::var("XDG_CONFIG_HOME")
+        .map(PathBuf::from)
+        .or_else(|_| std::env::var("HOME").map(|h| PathBuf::from(h).join(".config")))
+        .unwrap_or_else(|_| PathBuf::from("/tmp"));
+    let rules_dir = config_dir.join("nivek").join("rules");
+
+    let wasm_bus = Arc::clone(&bus);
+    let wasm_rx = bus.subscribe();
+    tokio::spawn(async move {
+        wasm::manager::run_wasm_manager(rules_dir, wasm_bus, wasm_rx).await;
+    });
+
     // Publicamos evento de ciclo de vida
     bus.publish(nivek_wasm_abi::SystemEvent::Custom {
         topic: "system.lifecycle".to_string(),
-        message: "nivek-core daemon inicializado con colector Niri y Context Morpher".to_string(),
+        message: "nivek-core inicializado con soporte Niri, Morpher y extensiones WASM"
+            .to_string(),
     });
 
     loop {

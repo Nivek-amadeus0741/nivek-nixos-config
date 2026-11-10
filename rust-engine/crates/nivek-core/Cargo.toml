@@ -14,3 +14,4 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
+wasmi = { workspace = true }
