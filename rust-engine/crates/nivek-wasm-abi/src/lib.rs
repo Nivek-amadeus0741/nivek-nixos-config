@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-/// Eventos del sistema operativo que el bus de Rust puede despachar a los plugins WASM
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// Eventos del sistema operativo que el bus de Rust puede despachar a los suscriptores y plugins
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type", content = "payload")]
 pub enum SystemEvent {
     /// Cambio de ventana activa en el compositor Wayland
@@ -19,14 +19,19 @@ pub enum SystemEvent {
         on_battery: bool,
         percentage: u8,
     },
-    /// Notificación de cambio de contexto solicitada por el usuario o script
+    /// Solicitud de cambio de contexto operativo (ej: dev, media, gaming, studio)
     ContextRequested {
         context: String,
     },
+    /// Evento genérico o de prueba
+    Custom {
+        topic: String,
+        message: String,
+    },
 }
 
-/// Acciones que un plugin o regla puede ordenar al motor de sistemas
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// Acciones que un cliente o plugin puede ordenar al motor de sistemas
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "action", content = "params")]
 pub enum SystemAction {
     /// Ajustar brillo de pantalla por DDC/CI (I2C)
@@ -34,7 +39,7 @@ pub enum SystemAction {
         display: u32,
         brightness: u8,
     },
-    /// Ajustar el gobernador de la CPU (performance, powersave, etc.)
+    /// Ajustar el gobernador de la CPU (performance, powersave, schedutil, etc.)
     SetCpuGovernor {
         governor: String,
     },
@@ -47,5 +52,50 @@ pub enum SystemAction {
     /// Conmutar modo de audio en PipeWire
     SetAudioProfile {
         profile: String,
+    },
+}
+
+/// Solicitudes IPC enviadas por nivekctl u otros clientes hacia nivek-core
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "cmd", content = "data")]
+pub enum IpcRequest {
+    /// Comprobación de salud básica y medición de RTT
+    Ping,
+    /// Consulta del estado global del demonio y métricas de runtime
+    GetStatus,
+    /// Transforma la conexión en un stream continuo de eventos en tiempo real
+    SubscribeEvents,
+    /// Inyecta un evento directamente en el bus de eventos del sistema
+    EmitEvent(SystemEvent),
+    /// Ejecuta una acción sobre el sistema operativo
+    TriggerAction(SystemAction),
+}
+
+/// Estado y métricas de salud del demonio nivek-core
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DaemonStatus {
+    pub version: String,
+    pub uptime_secs: u64,
+    pub total_events_dispatched: u64,
+    pub active_subscribers: usize,
+    pub memory_rss_bytes: u64,
+}
+
+/// Respuestas IPC devueltas por nivek-core a los clientes
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "res", content = "data")]
+pub enum IpcResponse {
+    Pong {
+        version: String,
+        uptime_secs: u64,
+    },
+    Status(DaemonStatus),
+    EventNotification(SystemEvent),
+    Ack {
+        success: bool,
+        message: String,
+    },
+    Error {
+        message: String,
     },
 }

@@ -1,6 +1,12 @@
+mod bus;
+mod server;
+mod state;
+
 use anyhow::Result;
+use bus::EventBus;
+use state::DaemonState;
 use std::path::PathBuf;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use std::sync::Arc;
 use tokio::net::UnixListener;
 use tracing::{error, info};
 
@@ -31,22 +37,23 @@ async fn main() -> Result<()> {
         socket_path.display()
     );
 
+    let bus = Arc::new(EventBus::new(1024));
+    let state = Arc::new(DaemonState::new());
+
+    // Publicamos un evento inicial de arranque del sistema
+    bus.publish(nivek_wasm_abi::SystemEvent::Custom {
+        topic: "system.lifecycle".to_string(),
+        message: "nivek-core daemon inicializado con éxito".to_string(),
+    });
+
     loop {
         match listener.accept().await {
-            Ok((mut stream, _addr)) => {
+            Ok((stream, _addr)) => {
+                let bus_clone = Arc::clone(&bus);
+                let state_clone = Arc::clone(&state);
                 tokio::spawn(async move {
-                    let mut buffer = [0u8; 1024];
-                    match stream.read(&mut buffer).await {
-                        Ok(n) if n > 0 => {
-                            let request = String::from_utf8_lossy(&buffer[..n]);
-                            info!("Petición recibida en socket: {}", request.trim());
-                            let response = format!(
-                                "{{\"status\":\"ok\",\"engine\":\"nivek-core\",\"received\":\"{}\"}}\n",
-                                request.trim()
-                            );
-                            let _ = stream.write_all(response.as_bytes()).await;
-                        }
-                        _ => {}
+                    if let Err(e) = server::handle_client(stream, bus_clone, state_clone).await {
+                        error!("Sesión de cliente finalizada: {}", e);
                     }
                 });
             }
