@@ -122,21 +122,21 @@ fn execute_action(action: &SystemAction) -> String {
         SystemAction::SetDisplayBrightness {
             display,
             brightness,
-        } => {
-            format!("Brillo ajustado en pantalla {} a {}%", display, brightness)
-        }
-        SystemAction::SetCpuGovernor { governor } => {
-            format!("Gobernador de CPU cambiado a '{}'", governor)
-        }
+        } => crate::hardware::display::set_display_brightness(*display, *brightness)
+            .unwrap_or_else(|e| format!("Error ajustando brillo: {}", e)),
+        SystemAction::SetCpuGovernor { governor } => crate::hardware::power::set_cpu_governor(governor)
+            .unwrap_or_else(|e| format!("Error en CPU governor: {}", e)),
         SystemAction::Notify {
             summary,
             body,
             urgency,
         } => {
+            let _ = std::process::Command::new("notify-send")
+                .args(["-u", urgency, summary, body])
+                .spawn();
             format!("Notificación enviada: [{}] {}: {}", urgency, summary, body)
         }
-        SystemAction::SetAudioProfile { profile } => {
-            format!("Perfil de audio PipeWire establecido en '{}'", profile)
-        }
+        SystemAction::SetAudioProfile { profile } => crate::audio::pipewire::apply_profile(profile)
+            .unwrap_or_else(|e| format!("Error en perfil de audio: {}", e)),
     }
 }

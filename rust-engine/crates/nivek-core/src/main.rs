@@ -1,5 +1,7 @@
+mod audio;
 mod bus;
 mod collectors;
+mod hardware;
 mod morpher;
 mod server;
 mod state;
@@ -49,14 +51,20 @@ async fn main() -> Result<()> {
         collectors::niri::run_niri_collector(niri_bus).await;
     });
 
-    // 2. Motor de políticas de Morfismo Contextual
+    // 2. Monitor de Telemetría de Batería y Energía
+    let power_bus = Arc::clone(&bus);
+    tokio::spawn(async move {
+        hardware::power::run_power_monitor(power_bus).await;
+    });
+
+    // 3. Motor de políticas de Morfismo Contextual
     let morpher_bus = Arc::clone(&bus);
     let morpher_rx = bus.subscribe();
     tokio::spawn(async move {
         morpher::run_context_morpher(morpher_rx, morpher_bus).await;
     });
 
-    // 3. Gestor de plugins WebAssembly (WASM Hot-Reload)
+    // 4. Gestor de plugins WebAssembly (WASM Hot-Reload)
     let config_dir = std::env::var("XDG_CONFIG_HOME")
         .map(PathBuf::from)
         .or_else(|_| std::env::var("HOME").map(|h| PathBuf::from(h).join(".config")))
@@ -72,8 +80,7 @@ async fn main() -> Result<()> {
     // Publicamos evento de ciclo de vida
     bus.publish(nivek_wasm_abi::SystemEvent::Custom {
         topic: "system.lifecycle".to_string(),
-        message: "nivek-core inicializado con soporte Niri, Morpher y extensiones WASM"
-            .to_string(),
+        message: "nivek-core inicializado con soporte Niri, Hardware, PipeWire y WASM".to_string(),
     });
 
     loop {

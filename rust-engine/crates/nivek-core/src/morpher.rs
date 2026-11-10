@@ -78,24 +78,30 @@ fn determine_context(app_id: &str, title: &str) -> String {
 fn apply_context_policy(context: &str, bus: &EventBus) {
     match context {
         "dev" => {
+            let _ = crate::hardware::power::set_cpu_governor("performance");
+            let _ = crate::audio::pipewire::apply_profile("dev");
             bus.publish(SystemEvent::Custom {
                 topic: "policy.governor".to_string(),
                 message: "CPU Governor set to 'performance' for development workflow".to_string(),
             });
         }
         "media" => {
+            let _ = crate::audio::pipewire::apply_profile("media");
             bus.publish(SystemEvent::Custom {
                 topic: "policy.audio".to_string(),
-                message: "PipeWire dynamic range compression activated for media".to_string(),
+                message: "PipeWire dynamic media profile activated".to_string(),
             });
         }
         "gaming" => {
+            let _ = crate::hardware::power::set_cpu_governor("performance");
+            let _ = crate::audio::pipewire::apply_profile("gaming");
             bus.publish(SystemEvent::Custom {
                 topic: "policy.gpu".to_string(),
                 message: "Maximum GPU clocks & VRR priority engaged for gaming".to_string(),
             });
         }
         _ => {
+            let _ = crate::hardware::power::set_cpu_governor("balanced");
             bus.publish(SystemEvent::Custom {
                 topic: "policy.power".to_string(),
                 message: "System governor reverted to balanced/schedutil".to_string(),
