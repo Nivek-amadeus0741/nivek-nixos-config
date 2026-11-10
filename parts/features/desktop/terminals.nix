@@ -16,6 +16,7 @@
         copy_on_select = "clipboard";
         tab_bar_style = "powerline";
         tab_powerline_style = "slanted";
+        shell = "${pkgs.zsh}/bin/zsh";
       };
     };
 
@@ -26,6 +27,7 @@
         local wezterm = require 'wezterm'
         local config = wezterm.config_builder()
 
+        config.default_prog = { '${pkgs.zsh}/bin/zsh' }
         config.font = wezterm.font('JetBrainsMono Nerd Font')
         config.font_size = 11.5
         config.window_background_opacity = 0.88

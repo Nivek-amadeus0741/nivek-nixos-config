@@ -4,7 +4,7 @@
       isNormalUser = true;
       description = "Nivek";
       extraGroups = [ "networkmanager" "wheel" "video" "audio" "input" ];
-      shell = pkgs.bashInteractive;
+      shell = pkgs.zsh;
     };
   };
 }

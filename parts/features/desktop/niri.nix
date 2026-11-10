@@ -114,6 +114,11 @@
         default-column-width { proportion 0.5; }
       }
 
+      window-rule {
+        match app-id=r#"^yazi$"#
+        default-column-width { proportion 0.5; }
+      }
+
       binds {
         // Lanzadores y Terminales
         Mod+Return { spawn "${pkgs.kitty}/bin/kitty"; }
@@ -125,6 +130,7 @@
         Mod+B { spawn "zen"; }
         Mod+E { spawn "code"; }
         Mod+O { spawn "obsidian"; }
+        Mod+N { spawn "${pkgs.kitty}/bin/kitty" "--class" "yazi" "-e" "yazi"; }
 
         // Gestión de Ventanas
         Mod+Q { close-window; }
