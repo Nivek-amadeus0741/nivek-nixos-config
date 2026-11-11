@@ -67,6 +67,8 @@ En lugar de depender de scripts lentos o sobrecargar la evaluación de Nix con i
 | `Mod + E` | Entorno IDE | **VS Code** |
 | `Mod + O` | Bóveda de Notas | **Obsidian** |
 | `Mod + N` | Explorador de Archivos | **Yazi** en Kitty |
+| `Mod + W` | Gestor de Redes / Wi-Fi | **nm-connection-editor** |
+| `Mod + Shift + B` | Gestor de Bluetooth | **blueman-manager** |
 | `Mod + Q` | Cerrar Ventana | Ventana activa |
 | `Mod + H / J / K / L` | Navegación | Izquierda / Abajo / Arriba / Derecha |
 | `Mod + Shift + H / J / K / L` | Mover Columnas | Desplazar ventana o columna |

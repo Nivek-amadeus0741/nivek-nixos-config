@@ -27,6 +27,8 @@
       polkit_gnome
       swaybg
       xwayland-satellite
+      networkmanagerapplet
+      blueman
     ];
 
     home.file.".local/share/wallpapers/caelestia-default.png".source = ../../../assets/wallpapers/caelestia-default.png;
@@ -49,6 +51,8 @@
       spawn-at-startup "systemctl" "--user" "restart" "mako"
       spawn-at-startup "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1"
       spawn-at-startup "${pkgs.swaybg}/bin/swaybg" "-i" "/home/nivek/.local/share/wallpapers/caelestia-default.png" "-m" "fill"
+      spawn-at-startup "${pkgs.networkmanagerapplet}/bin/nm-applet" "--indicator"
+      spawn-at-startup "${pkgs.blueman}/bin/blueman-applet"
 
       input {
         keyboard {
@@ -97,10 +101,16 @@
         match app-id=r#"^org\.kde\.ksshaskpass$"#
         match app-id=r#"^pavucontrol$"#
         match app-id=r#"^nm-connection-editor$"#
+        match app-id=r#"^nm-applet$"#
+        match app-id=r#"^blueman-manager$"#
+        match app-id=r#"^blueman-assistant$"#
+        match app-id=r#"^blueman-sendto$"#
         match app-id=r#"^zenity$"#
         match title=r#"^Open File$"#
         match title=r#"^Save File$"#
         match title=r#"^Nivek Engine Monitor$"#
+        match title=r#"^Bluetooth Devices$"#
+        match title=r#"^Network Connections$"#
         open-floating true
       }
 
@@ -131,6 +141,10 @@
         Mod+E { spawn "code"; }
         Mod+O { spawn "obsidian"; }
         Mod+N { spawn "${pkgs.kitty}/bin/kitty" "--class" "yazi" "-e" "yazi"; }
+
+        // Gestores de Red e Internet y Bluetooth
+        Mod+W { spawn "${pkgs.networkmanagerapplet}/bin/nm-connection-editor"; }
+        Mod+Shift+B { spawn "${pkgs.blueman}/bin/blueman-manager"; }
 
         // Gestión de Ventanas
         Mod+Q { close-window; }
