@@ -6,15 +6,15 @@
         runtimeInputs = [ pkgs.coreutils pkgs.gnugrep pkgs.gawk ];
         text = ''
           if ! RAW=$(nivekctl status 2>/dev/null); then
-            echo '{"text":"󰒲 Engine","tooltip":"nivek-engine no está en ejecución","class":"offline"}'
+            printf '%s\n' '{"text":"󰒲 Engine","tooltip":"nivek-engine no está en ejecución","class":"offline"}'
             exit 0
           fi
 
-          RAM=$(echo "$RAW" | grep "Memoria RSS" | awk '{print $4, $5}' | tr -d '│')
-          UPTIME=$(echo "$RAW" | grep "Tiempo Activo" | awk -F': ' '{print $2}' | tr -d '│ ')
-          EVENTS=$(echo "$RAW" | grep "Eventos Procesados" | awk '{print $4}' | tr -d '│')
+          RAM=$(printf '%s\n' "$RAW" | grep "Memoria RSS" | awk '{print $4, $5}' | tr -d '│')
+          UPTIME=$(printf '%s\n' "$RAW" | grep "Tiempo Activo" | awk -F': ' '{print $2}' | tr -d '│ ')
+          EVENTS=$(printf '%s\n' "$RAW" | grep "Eventos Procesados" | awk '{print $4}' | tr -d '│')
 
-          echo "{\"text\":\"󱐋 Engine [OK]\",\"tooltip\":\"󱐋 Nivek Reactive OS Engine\\n󰍛 Memoria: $RAM\\n⏱ Uptime: $UPTIME\\n⚡ Eventos: $EVENTS\\n(Clic para abrir Monitor en vivo)\",\"class\":\"active\"}"
+          printf '%s\n' "{\"text\":\"󱐋 Engine [OK]\",\"tooltip\":\"󱐋 Nivek Reactive OS Engine\\n󰍛 Memoria: $RAM\\n⏱ Uptime: $UPTIME\\n⚡ Eventos: $EVENTS\\n(Clic para abrir Monitor en vivo)\",\"class\":\"active\"}"
         '';
       };
     in {
